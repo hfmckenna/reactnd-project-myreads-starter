@@ -126,6 +126,11 @@ body, .app {
 .book-authors {
   font-size: 0.8em;
 }
+
+.book-extra-info {
+  font-size: 0.7em;
+  color: #888;
+}
 .book-title {
   margin-top: 10px;
 }

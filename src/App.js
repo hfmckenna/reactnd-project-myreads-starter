@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React from 'react'
 import * as BooksAPI from './BooksAPI'
 import BookList from './BookList'
 import './App.css'
@@ -17,19 +17,62 @@ class BooksApp extends React.Component {
     showSearchPage: window.location.href === 'http://localhost:3000/search' ? true : false
   }
 
-  componentDidMount() {BooksAPI.getAll().then((books) => {
-    this.setState({ books })
-  })}
+  getAllBooks = () => {
+    BooksAPI.getAll().then((books) => {
+      this.setState({
+        books
+      })
+    })
+  }
+  
+  componentDidMount() {
+    this.getAllBooks()
+  }
 
-  updateBooksAPI = (newShelf,bookToUpdate) => {
-    this.setState((state) => ({
-      books: state.books.map(book => { if (bookToUpdate.id === book.id){book.shelf = newShelf; return book} else {return book}})
-    }))
-    BooksAPI.update(bookToUpdate,newShelf)
+  updateBooksAPI = (newShelf, bookToUpdate) => {
+    BooksAPI.update(bookToUpdate, newShelf)
+    .then(() => {this.getAllBooks()})
+    .then(() => {this.state.showSearchPage ? window.location.href = 'http://localhost:3000/' : ''})
   }
 
   updateQuery = (query) => {
-    this.setState({ query: query.trim() })
+    this.setState({
+      query: query.trim()
+    })
+    BooksAPI.search(query)
+      .then((searchResponse) => {
+        if ('error' in searchResponse && 'error' in searchResponse.books) {
+          return Promise.reject(new Error())
+        } else {
+          return Promise.resolve(searchResponse)
+        }
+      })
+      .then(success => {
+        this.setState({
+          bookSearch: success
+        })
+        this.addShelvesToSearchBook()
+      })
+      .catch(() => {
+        this.setState({
+          bookSearch: []
+        })
+      })
+  }
+
+  addShelvesToSearchBook = () => {
+    this.setState((state) => ({
+      bookSearch: state.bookSearch.map(book => { for (var i = 0; i < state.books.length; i++) 
+        {
+        if (state.books[i].id === book.id) 
+          {book.shelf = state.books[i].shelf; 
+          return book;}
+        else if ((i + 1) === state.books.length) 
+          {book.shelf = 'none';
+          return book;}
+        } 
+      })
+    }))
   }
 
   render() {
@@ -49,13 +92,18 @@ class BooksApp extends React.Component {
                   you don't find a specific author or title. Every search is limited by search terms.
                 */
                 }
-                <input type="text" placeholder="Search by title or author"/>
+                <input 
+                type="text" 
+                placeholder="Search by title or author"
+                value={this.state.query}
+                onChange={(event) => this.updateQuery(event.target.value)}
+                />
 
               </div>
             </div>
             <div className="search-books-results">
               <ol className="books-grid">
-              <BookList bookList={this.state.bookSearch} updateShelf={this.updateBooksAPI} />
+              <BookList bookList={this.state.bookSearch} isSearch={true} updateShelf={this.updateBooksAPI} />
               </ol>
             </div>
           </div>
@@ -63,7 +111,6 @@ class BooksApp extends React.Component {
           <div className="list-books">
             <div className="list-books-title">
               <h1>MyReads</h1>
-              {JSON.stringify(this.state.books)}
             </div>
             <div className="list-books-content">
               <div>
