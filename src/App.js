@@ -21,6 +21,11 @@ class BooksApp extends React.Component {
       })
     }
 
+    /*  Changes the shelf property of an individual book by matching the object
+        but seemingly reliant on the id as the primary key. Redirects to home if
+        the user is on search. 
+    */
+
     updateBooksAPI = (newShelf, bookToUpdate) => {
       BooksAPI.update(bookToUpdate, newShelf)
         .then(() => {
@@ -33,6 +38,12 @@ class BooksApp extends React.Component {
           }})
         })
     }
+
+    /*  Basic trim method used but could add better escapement of characters. Also
+        error handling is based on the returned object from BooksAPI, this could be
+        handled within BooksAPI.js. However the error responses are ultimately valid,
+        even if they're unwanted and unused in this case.
+    */
 
     updateQuery = (query) => {
       this.setState({
@@ -59,6 +70,11 @@ class BooksApp extends React.Component {
         })
     }
 
+    /*  Search results from the API don't have a shelf field. So instead
+        this method matches up any existing book shelf properties with
+        the search results added to state.
+    */
+
     addShelvesToSearchBook = () => {
       this.setState((state) => ({
         bookSearch: state.bookSearch.map(book => {
@@ -72,6 +88,7 @@ class BooksApp extends React.Component {
         })
       }))
     }
+
   render() {
     return (
       <div className="app">
@@ -80,22 +97,12 @@ class BooksApp extends React.Component {
             <div className="search-books-bar">
               <a className="close-search" onClick={() => window.location.href = 'http://localhost:3000'}>Close</a>
               <div className="search-books-input-wrapper">
-                {/*
-                  NOTES: The search from BooksAPI is limited to a particular set of search terms.
-                  You can find these search terms here:
-                  https://github.com/udacity/reactnd-project-myreads-starter/blob/master/SEARCH_TERMS.md
-
-                  However, remember that the BooksAPI.search method DOES search by title or author. So, don't worry if
-                  you don't find a specific author or title. Every search is limited by search terms.
-                */
-                }
                 <input 
                 type="text" 
                 placeholder="Search by title or author"
                 value={this.state.query}
                 onChange={(event) => this.updateQuery(event.target.value)}
                 />
-
               </div>
             </div>
             <div className="search-books-results">

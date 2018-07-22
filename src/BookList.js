@@ -4,6 +4,9 @@ import './App.css'
 class BookList extends React.Component {
 
   render() {
+      /* Gives a readable value to the HTML, switch casing would be more succinct
+         however if statements are more readable themselves and so preferred. 
+       */
     const createReadableShelves = (bookShelf) => {
         if (bookShelf === 'none') {
             return 'Shelf: None';
@@ -26,6 +29,7 @@ class BookList extends React.Component {
             <div className="book">
                 <div className="book-top">
                 <div className="book-cover" style={
+                    // Ternary handles occasional blank properties returned from API
                     { width: 128, height: 193, backgroundImage: `url(${'imageLinks' in book ? book.imageLinks.smallThumbnail : ''})` }}></div>
                 <div className="book-shelf-changer">
                     <select value={book.shelf} onChange={(event) => this.props.updateShelf(event.target.value, book)}>
@@ -38,6 +42,7 @@ class BookList extends React.Component {
                 </div>
                 </div>
                 <div className="book-title">{ book.title }</div>
+                {/* Ternary combines with function to display the shelf in searches, while the publisher shows on the home page */}
                 <div className="book-extra-info">{this.props.isSearch ? createReadableShelves(book.shelf) : book.publisher}</div>
                 <div className="book-authors">{ book.authors ? book.authors.join(', ') : '' }</div>
             </div>
