@@ -4,77 +4,74 @@ import BookList from './BookList'
 import './App.css'
 
 class BooksApp extends React.Component {
-  state = {
-    /**
-     * TODO: Instead of using this state variable to keep track of which page
-     * we're on, use the URL in the browser's address bar. This will ensure that
-     * users can use the browser's back and forward buttons to navigate between
-     * pages, as well as provide a good URL they can bookmark and share.
-     */
-    books: [],
-    bookSearch: [],
-    query: '',
-    showSearchPage: window.location.href === 'http://localhost:3000/search' ? true : false
-  }
+    state = {
+      books: [],
+      bookSearch: [],
+      query: '',
+      showSearchPage: window.location.href === 'http://localhost:3000/search' ? true : false
+    }
 
-  getAllBooks = () => {
-    BooksAPI.getAll().then((books) => {
+    // Initial async call to the API, then re-renders when the call completes
+
+    componentDidMount() {
+      BooksAPI.getAll().then((books) => {
+        this.setState({
+          books
+        })
+      })
+    }
+
+    updateBooksAPI = (newShelf, bookToUpdate) => {
+      BooksAPI.update(bookToUpdate, newShelf)
+        .then(() => {
+          BooksAPI.getAll().then((books) => {
+            this.setState({
+              books
+            })
+          }).then(() => {if (this.state.showSearchPage) {
+            window.location.href = 'http://localhost:3000/'
+          }})
+        })
+    }
+
+    updateQuery = (query) => {
       this.setState({
-        books
+        query: query.trim()
       })
-    })
-  }
-  
-  componentDidMount() {
-    this.getAllBooks()
-  }
-
-  updateBooksAPI = (newShelf, bookToUpdate) => {
-    BooksAPI.update(bookToUpdate, newShelf)
-    .then(() => {this.getAllBooks()})
-    .then(() => {this.state.showSearchPage ? window.location.href = 'http://localhost:3000/' : ''})
-  }
-
-  updateQuery = (query) => {
-    this.setState({
-      query: query.trim()
-    })
-    BooksAPI.search(query)
-      .then((searchResponse) => {
-        if ('error' in searchResponse && 'error' in searchResponse.books) {
-          return Promise.reject(new Error())
-        } else {
-          return Promise.resolve(searchResponse)
-        }
-      })
-      .then(success => {
-        this.setState({
-          bookSearch: success
+      BooksAPI.search(query)
+        .then((searchResponse) => {
+          if ('error' in searchResponse && 'error' in searchResponse.books) {
+            return Promise.reject(new Error())
+          } else {
+            return Promise.resolve(searchResponse)
+          }
         })
-        this.addShelvesToSearchBook()
-      })
-      .catch(() => {
-        this.setState({
-          bookSearch: []
+        .then(success => {
+          this.setState({
+            bookSearch: success
+          })
+          this.addShelvesToSearchBook()
         })
-      })
-  }
+        .catch(() => {
+          this.setState({
+            bookSearch: []
+          })
+        })
+    }
 
-  addShelvesToSearchBook = () => {
-    this.setState((state) => ({
-      bookSearch: state.bookSearch.map(book => { for (var i = 0; i < state.books.length; i++) 
-        {
-        if (state.books[i].id === book.id) 
-          {book.shelf = state.books[i].shelf; 
-          return book;}
-        else if ((i + 1) === state.books.length) 
-          {book.shelf = 'none';
-          return book;}
-        } 
-      })
-    }))
-  }
-
+    addShelvesToSearchBook = () => {
+      this.setState((state) => ({
+        bookSearch: state.bookSearch.map(book => {
+          book.shelf = 'none'
+          for (let bookShelf of state.books) {
+            if (bookShelf.id === book.id) {
+              book.shelf = bookShelf.shelf
+            }
+          }
+          return book
+        })
+      }))
+    }
   render() {
     return (
       <div className="app">
