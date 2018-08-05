@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link, Route } from 'react-router-dom'
 import * as BooksAPI from './BooksAPI'
 import BookList from './BookList'
 import './App.css'
@@ -7,8 +8,7 @@ class BooksApp extends React.Component {
     state = {
       books: [],
       bookSearch: [],
-      query: '',
-      showSearchPage: window.location.href === 'http://localhost:3000/search' ? true : false
+      query: ''
     }
 
     // Initial async call to the API, then re-renders when the call completes
@@ -33,9 +33,7 @@ class BooksApp extends React.Component {
             this.setState({
               books
             })
-          }).then(() => {if (this.state.showSearchPage) {
-            window.location.href = 'http://localhost:3000/'
-          }})
+          })
         })
     }
 
@@ -47,9 +45,10 @@ class BooksApp extends React.Component {
 
     updateQuery = (query) => {
       this.setState({
-        query: query.trim()
+        query: query
       })
-      BooksAPI.search(query)
+      if (query !== ''){
+      BooksAPI.search(query.trim())
         .then((searchResponse) => {
           if ('error' in searchResponse && 'error' in searchResponse.books) {
             return Promise.reject(new Error())
@@ -67,7 +66,7 @@ class BooksApp extends React.Component {
           this.setState({
             bookSearch: []
           })
-        })
+        })}
     }
 
     /*  Search results from the API don't have a shelf field. So instead
@@ -92,10 +91,12 @@ class BooksApp extends React.Component {
   render() {
     return (
       <div className="app">
-        {this.state.showSearchPage ? (
+        <Route path="/search" exact render={() => (
           <div className="search-books">
             <div className="search-books-bar">
-              <a className="close-search" onClick={() => window.location.href = 'http://localhost:3000'}>Close</a>
+              <Link to="/" className="close-search" >
+                Close
+              </Link>
               <div className="search-books-input-wrapper">
                 <input 
                 type="text" 
@@ -111,7 +112,8 @@ class BooksApp extends React.Component {
               </ol>
             </div>
           </div>
-        ) : (
+        )}/>
+        <Route path="/" exact render={() => (
           <div className="list-books">
             <div className="list-books-title">
               <h1>MyReads</h1>
@@ -139,10 +141,12 @@ class BooksApp extends React.Component {
               </div>
             </div>
             <div className="open-search">
-              <a onClick={() => window.location.href = 'http://localhost:3000/search'}>Add a book</a>
+              <Link to="/search" className="search-page" >
+                Add a book
+              </Link>
             </div>
           </div>
-        )}
+        )}/>
       </div>
     )
   }
