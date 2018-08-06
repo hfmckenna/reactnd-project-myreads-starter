@@ -67,6 +67,11 @@ class BooksApp extends React.Component {
             bookSearch: []
           })
         })}
+      else {
+        this.setState({
+          bookSearch: []
+        })
+      }
     }
 
     /*  Search results from the API don't have a shelf field. So instead
